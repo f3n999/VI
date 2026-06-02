@@ -196,10 +196,10 @@ services:
     read_only: true
     tmpfs:
       - /var/cache/nginx
-      - /var/run
+      - /run
       - /tmp
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/healthz"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/healthz"]
       interval: 15s
       timeout: 5s
       retries: 5
