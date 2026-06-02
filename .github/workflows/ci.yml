@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile:
+          - thread-api/Dockerfile
+          - tailor-panel/Dockerfile
+          - stitch-processor/Dockerfile
+          - fabric-watch/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - name: hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ${{ matrix.dockerfile }}
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: compose config
+        run: |
+          mkdir -p secrets reverse-proxy/tls
+          for s in db_password jwt_secret grafana_admin_password stitch_api_key; do
+            echo dummy > "secrets/$s"
+          done
+          docker compose config >/dev/null
+
+  build-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build images
+        run: |
+          for s in db_password jwt_secret grafana_admin_password stitch_api_key; do
+            echo dummy > "secrets/$s"
+          done
+          docker compose build
+      - name: trivy (vulns + misconfig, fail on HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"

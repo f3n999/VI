@@ -1,0 +1,7 @@
+secrets/*
+!secrets/*.example
+reverse-proxy/tls/
+__pycache__/
+*.pyc
+node_modules/
+.env
