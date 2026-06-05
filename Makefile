@@ -21,7 +21,9 @@ clean: ## Arrête la stack et supprime les volumes
 	docker compose down -v
 
 test: ## Lance la suite de tests pytest
-	pytest thread-api/tests -q
+	python3 -m venv .venv 2>/dev/null || true
+	.venv/bin/pip install -q -r thread-api/requirements-dev.txt
+	.venv/bin/pytest thread-api/tests -q
 
 demo: ## Rejoue le scénario de démo complet
 	sh scripts/demo.sh

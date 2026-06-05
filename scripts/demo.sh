@@ -107,12 +107,9 @@ hr
 # ── Étape 6 : Tests CI ────────────────────────────────────────────────────────
 step 6 "Tests pytest (preuve formelle)"
 info "Exécution de la suite de tests..."
-if command -v pytest >/dev/null 2>&1; then
-    pytest thread-api/tests -q
-    ok "29 tests verts — dont test_injection_sql_bloquee."
-else
-    info "pytest non installé ici — montrer le run CI sur GitHub Actions."
-fi
+python3 -m venv .venv 2>/dev/null || true
+.venv/bin/pip install -q -r thread-api/requirements-dev.txt 2>/dev/null
+.venv/bin/pytest thread-api/tests -q && ok "29 tests verts — dont test_injection_sql_bloquee." || fail "Des tests ont échoué."
 hr
 
 # ── Étape 7 : Supervision Grafana ─────────────────────────────────────────────
