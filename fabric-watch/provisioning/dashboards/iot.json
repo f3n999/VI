@@ -1,0 +1,251 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Fréquence cardiaque (7 jours)",
+      "type": "timeseries",
+      "datasource": {"type": "postgres", "uid": "velvet-pg"},
+      "gridPos": {"x": 0, "y": 0, "w": 16, "h": 9},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "velvet-pg"},
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT recorded_at AS \"time\", heart_rate AS \"Jean Dupont\" FROM health_data WHERE user_id = 3 AND $__timeFilter(recorded_at) ORDER BY recorded_at",
+          "refId": "A"
+        },
+        {
+          "datasource": {"type": "postgres", "uid": "velvet-pg"},
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT recorded_at AS \"time\", heart_rate AS \"Marie Martin\" FROM health_data WHERE user_id = 4 AND $__timeFilter(recorded_at) ORDER BY recorded_at",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "showPoints": "auto",
+            "pointSize": 5,
+            "spanNulls": false,
+            "axisLabel": "bpm",
+            "thresholdsStyle": {"mode": "line"}
+          },
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 100},
+              {"color": "red", "value": 130}
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {"mode": "multi", "sort": "none"},
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}
+      }
+    },
+    {
+      "id": 2,
+      "title": "Chutes détectées",
+      "type": "stat",
+      "datasource": {"type": "postgres", "uid": "velvet-pg"},
+      "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "velvet-pg"},
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS \"Chutes\" FROM health_data WHERE fall_detected = true AND $__timeFilter(recorded_at)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 3}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Total mesures",
+      "type": "stat",
+      "datasource": {"type": "postgres", "uid": "velvet-pg"},
+      "gridPos": {"x": 16, "y": 4, "w": 4, "h": 5},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "velvet-pg"},
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS \"Mesures\" FROM health_data WHERE $__timeFilter(recorded_at)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "blue", "value": null}]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Répartition des postures",
+      "type": "piechart",
+      "datasource": {"type": "postgres", "uid": "velvet-pg"},
+      "gridPos": {"x": 20, "y": 0, "w": 4, "h": 9},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "velvet-pg"},
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT posture, count(*)::int AS \"Nombre\" FROM health_data WHERE $__timeFilter(recorded_at) AND posture IS NOT NULL GROUP BY posture ORDER BY \"Nombre\" DESC",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "palette-classic"}},
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["sum"], "fields": "/^Nombre$/", "values": true},
+        "pieType": "pie",
+        "tooltip": {"mode": "single", "sort": "none"},
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}
+      }
+    },
+    {
+      "id": 5,
+      "title": "Dernières mesures",
+      "type": "table",
+      "datasource": {"type": "postgres", "uid": "velvet-pg"},
+      "gridPos": {"x": 0, "y": 9, "w": 24, "h": 8},
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "velvet-pg"},
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT hd.recorded_at AS \"Horodatage\", u.email AS \"Utilisateur\", hd.heart_rate AS \"Fréquence (bpm)\", CASE WHEN hd.fall_detected THEN '⚠ OUI' ELSE 'non' END AS \"Chute\", hd.posture AS \"Posture\" FROM health_data hd JOIN users u ON u.id = hd.user_id WHERE $__timeFilter(hd.recorded_at) ORDER BY hd.recorded_at DESC LIMIT 30",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"custom": {"align": "auto", "cellOptions": {"type": "auto"}}},
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Chute"},
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {"color": "green", "value": null},
+                    {"color": "red", "value": "⚠ OUI"}
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {"id": "byName", "options": "Fréquence (bpm)"},
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {"color": "green", "value": null},
+                    {"color": "yellow", "value": 100},
+                    {"color": "red", "value": 130}
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {"type": "color-background"}
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{"displayName": "Horodatage", "desc": true}]
+      }
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["iot", "sl1pconnect", "santé"],
+  "templating": {"list": []},
+  "time": {"from": "now-7d", "to": "now"},
+  "timepicker": {},
+  "timezone": "Europe/Paris",
+  "title": "SL1PCONNECT — Supervision IoT",
+  "uid": "sl1pconnect-iot",
+  "version": 1
+}

@@ -105,6 +105,12 @@ services:
       - data
     cap_drop:
       - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run/apache2
+      - /var/lock/apache2
+      - /var/log/apache2
     healthcheck:
       test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost:8080/')===false?1:0);"]
       interval: 15s
@@ -157,14 +163,23 @@ services:
       GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
       GF_SERVER_ROOT_URL: https://grafana.sl1p.local/
       GF_USERS_ALLOW_SIGN_UP: "false"
+      DB_PASSWORD_FILE: /run/secrets/db_password
     secrets:
       - grafana_admin_password
+      - db_password
     volumes:
       - grafana-data:/var/lib/grafana
     networks:
       - edge
+      - data
     cap_drop:
       - ALL
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:

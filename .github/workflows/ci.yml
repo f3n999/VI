@@ -33,6 +33,18 @@ jobs:
           done
           docker compose config >/dev/null
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: install
+        run: pip install -r thread-api/requirements-dev.txt
+      - name: pytest
+        run: pytest thread-api/tests -q
+
   build-scan:
     runs-on: ubuntu-latest
     steps:

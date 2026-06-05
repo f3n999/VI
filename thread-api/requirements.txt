@@ -3,3 +3,4 @@ Werkzeug==3.0.4
 gunicorn==22.0.0
 psycopg2-binary==2.9.9
 PyJWT==2.9.0
+pydantic==2.9.2

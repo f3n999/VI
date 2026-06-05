@@ -5,10 +5,12 @@ import hashlib
 import hmac
 import datetime
 from functools import wraps
+from typing import Optional
 
 from flask import Flask, request, jsonify, g
 import jwt
 import psycopg2
+from pydantic import BaseModel, ValidationError
 
 
 def read_secret(name, default=None):
@@ -33,6 +35,19 @@ DB = dict(
 )
 
 app = Flask(__name__)
+
+
+class LoginRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    email: str
+    password: str
+
+
+class SensorPayload(BaseModel):
+    model_config = {"extra": "forbid"}
+    heart_rate: Optional[int] = None
+    fall_detected: bool = False
+    posture: Optional[str] = None
 
 
 def get_db():
@@ -97,17 +112,22 @@ def health():
 
 @app.route("/api/login", methods=["POST"])
 def login():
-    data = request.get_json(force=True, silent=True) or {}
+    try:
+        body = LoginRequest.model_validate(
+            request.get_json(force=True, silent=True) or {}
+        )
+    except ValidationError as exc:
+        return jsonify(error="invalid input", detail=exc.errors()), 400
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
         "SELECT id, role, password_hash FROM users WHERE email=%s",
-        (data.get("email", ""),),
+        (body.email,),
     )
     row = cur.fetchone()
     cur.close()
     conn.close()
-    if not row or not verify_password(row[2], data.get("password", "")):
+    if not row or not verify_password(row[2], body.password):
         return jsonify(error="invalid credentials"), 401
     return jsonify(token=make_token(row[0], row[1]), user_id=row[0], role=row[1])
 
@@ -115,15 +135,18 @@ def login():
 @app.route("/api/sensors", methods=["POST"])
 @require_auth
 def add_sensor():
-    data = request.get_json(force=True, silent=True) or {}
-    # Ecriture uniquement pour l'utilisateur authentifie (anti-IDOR).
+    try:
+        body = SensorPayload.model_validate(
+            request.get_json(force=True, silent=True) or {}
+        )
+    except ValidationError as exc:
+        return jsonify(error="invalid input", detail=exc.errors()), 400
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO health_data (user_id, heart_rate, fall_detected, posture) "
         "VALUES (%s, %s, %s, %s) RETURNING id",
-        (g.user_id, data.get("heart_rate"),
-         data.get("fall_detected", False), data.get("posture")),
+        (g.user_id, body.heart_rate, body.fall_detected, body.posture),
     )
     new_id = cur.fetchone()[0]
     conn.commit()
