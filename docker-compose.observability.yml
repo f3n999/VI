@@ -1,0 +1,104 @@
+# Couche observabilité (opt-in, additive) — métriques + logs.
+# Le docker-compose.yml de base n'est pas modifié.
+# Lancer : docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d --build
+#
+# Métriques : Prometheus + node_exporter (hôte)  |  Logs : Loki + Promtail
+# Aucun /var/run/docker.sock monté (Promtail lit les logs en fichiers) → cohérent
+# avec la suppression du docker.sock côté Grafana.
+
+x-obs: &obs
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+
+  # Grafana rejoint le réseau monitoring + charge les datasources Prometheus/Loki
+  fabric-watch:
+    networks:
+      - edge
+      - data
+      - monitoring
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana-datasources/prometheus.yml:/etc/grafana/provisioning/datasources/prometheus.yml:ro
+      - ./monitoring/grafana-datasources/loki.yml:/etc/grafana/provisioning/datasources/loki.yml:ro
+
+  prometheus:
+    <<: *obs
+    image: prom/prometheus:v2.54.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - monitoring
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  node-exporter:
+    <<: *obs
+    image: prom/node-exporter:v1.8.2
+    command:
+      - --path.rootfs=/host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    networks:
+      - monitoring
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  loki:
+    <<: *obs
+    image: grafana/loki:3.1.1
+    command: -config.file=/etc/loki/config.yml
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/config.yml:ro
+      - loki-data:/loki
+    networks:
+      - monitoring
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  promtail:
+    <<: *obs
+    image: grafana/promtail:3.1.1
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - monitoring
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+networks:
+  monitoring:
+
+volumes:
+  prometheus-data:
+  loki-data:
