@@ -98,6 +98,7 @@ services:
 
 networks:
   monitoring:
+    internal: true
 
 volumes:
   prometheus-data:
