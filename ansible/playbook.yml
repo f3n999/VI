@@ -1,0 +1,98 @@
+---
+# Déploiement reproductible de la stack SL1PCONNECT durcie sur une VM Ubuntu.
+# Usage :
+#   ansible-playbook -i inventory.ini playbook.yml
+#   ansible-playbook -i inventory.ini playbook.yml -e observability=true
+- name: Deploiement SL1PCONNECT (stack durcie)
+  hosts: sl1pconnect
+  become: true
+
+  vars:
+    repo_url: "https://github.com/f3n999/VI.git"
+    repo_version: "main"
+    deploy_dir: "/opt/sl1pconnect"
+    observability: false
+
+  tasks:
+    # --- Docker Engine + Compose v2 (depot officiel Docker) ---
+    - name: Paquets prerequis
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - git
+        state: present
+        update_cache: true
+
+    - name: Dossier keyrings apt
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Cle GPG Docker
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: "0644"
+
+    - name: Depot Docker
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+        filename: docker
+
+    - name: Docker Engine + plugin Compose
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+    - name: Service Docker actif au demarrage
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    # --- Code ---
+    - name: Cloner / mettre a jour le depot VI
+      ansible.builtin.git:
+        repo: "{{ repo_url }}"
+        dest: "{{ deploy_dir }}"
+        version: "{{ repo_version }}"
+
+    # --- Secrets (generes SUR la VM, jamais transportes) ---
+    - name: Generer secrets + certificat TLS (idempotent)
+      ansible.builtin.command:
+        cmd: sh scripts/gen-secrets.sh
+        chdir: "{{ deploy_dir }}"
+        creates: "{{ deploy_dir }}/secrets/jwt_secret"
+
+    # --- Lancement ---
+    - name: Demarrer la stack (base)
+      ansible.builtin.command:
+        cmd: docker compose up -d --build
+        chdir: "{{ deploy_dir }}"
+      when: not observability | bool
+
+    - name: Demarrer la stack (base + observabilite)
+      ansible.builtin.command:
+        cmd: docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d --build
+        chdir: "{{ deploy_dir }}"
+      when: observability | bool
+
+    - name: Etat des conteneurs
+      ansible.builtin.command:
+        cmd: docker compose ps
+        chdir: "{{ deploy_dir }}"
+      register: compose_ps
+      changed_when: false
+
+    - name: Afficher l'etat
+      ansible.builtin.debug:
+        var: compose_ps.stdout_lines

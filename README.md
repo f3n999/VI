@@ -133,15 +133,17 @@ VI/
 ├── Makefile                         # up / test / demo / nmap / logs / down
 ├── ARCHITECTURE.md · PLAN.md · CLAUDE.md
 ├── docs/HA-OBSERVABILITY.md         # HA, observabilité, fix sécu Grafana (lecture seule)
-├── .github/workflows/ci.yml         # hadolint + compose config + pytest + trivy
+├── .github/workflows/ci.yml         # hadolint + compose config + pytest + trivy (fs + images)
+├── ansible/                         # déploiement reproductible (IaC) : install Docker + clone + up
 ├── scripts/                         # gen-secrets, demo, nmap-proof, backup, restore-drill
 ├── monitoring/                      # configs Prometheus / Loki / Promtail + datasources
 ├── reverse-proxy/nginx.conf         # TLS, vhosts, en-têtes de sécurité
 ├── db-velvet/init.sql               # schéma + seed synthétique (mots de passe hachés)
 ├── fabric-watch/                    # Grafana + provisioning auto (dashboard santé)
-├── thread-api/                      # API Flask (pydantic, JWT, anti-IDOR) + tests/
+├── thread-api/                      # API Flask (pydantic strict, JWT, anti-IDOR) + tests/
 ├── tailor-panel/                    # back-office PHP (requêtes préparées, non-root)
 ├── stitch-processor/                # traitement Node (clé API, isolé, non-root)
+├── legacy-vulnerable-AVANT/         # stack d'origine NON durcie — référence avant/après (ne pas déployer)
 └── secrets/                         # gabarits *.example (vrais secrets gitignorés)
 ```
 

@@ -38,13 +38,14 @@ app = Flask(__name__)
 
 
 class LoginRequest(BaseModel):
-    model_config = {"extra": "forbid"}
+    # strict=True : refuse aussi les coercitions de type ("72" -> 72, "false" -> False).
+    model_config = {"extra": "forbid", "strict": True}
     email: str
     password: str
 
 
 class SensorPayload(BaseModel):
-    model_config = {"extra": "forbid"}
+    model_config = {"extra": "forbid", "strict": True}
     heart_rate: Optional[int] = None
     fall_detected: bool = False
     posture: Optional[str] = None

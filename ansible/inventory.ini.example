@@ -1,0 +1,10 @@
+# Copier en inventory.ini et renseigner la VM cible (sur l'ESXi).
+# inventory.ini est gitignoré (peut contenir une IP/host interne).
+
+[sl1pconnect]
+vm-sl1p ansible_host=192.168.213.33 ansible_user=ubuntu
+
+[sl1pconnect:vars]
+ansible_python_interpreter=/usr/bin/python3
+# Si clé SSH dédiée :
+# ansible_ssh_private_key_file=~/.ssh/sl1p_deploy

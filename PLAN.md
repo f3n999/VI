@@ -25,9 +25,10 @@ hybride, virtualisée, conteneurisée, sécurisée et reproductible.
 
 ## Grille implicite du prof (ses « tips » = à montrer en démo)
 
-`Trivy` (CI ✓) · `hadolint` (CI ✓) · `healthcheck` (✓) · **`pydantic` strict (à ajouter)** ·
-**tests « dans tous les sens » (à ajouter)** · **`nmap` scan (preuve d'exposition)** ·
-`yaml strict` (compose config ✓) · **rejeu de la SQLi qu'ils ont subie (à scénariser)**.
+`Trivy` fs + **scan d'images** (CI ✓) · `hadolint` (CI ✓) · `healthcheck` (✓) ·
+`pydantic` strict `extra="forbid"` + `strict=True` (✓) · tests pytest « dans tous les sens » (✓, 29 tests) ·
+**`nmap` scan (preuve d'exposition, à rejouer en démo)** · `yaml strict` (compose config ✓) ·
+rejeu de la SQLi qu'ils ont subie → bloquée (✓ couvert par les tests, à rejouer en démo).
 
 ---
 
@@ -46,10 +47,10 @@ hybride, virtualisée, conteneurisée, sécurisée et reproductible.
 
 | Tâche | Livrable |
 |-------|----------|
-| ESXi + VM, déploiement de la stack `VI` durcie | maquette qui tourne |
-| **Ajouter `pydantic` (validation stricte `extra="forbid"`) à thread-api** | code + commit |
-| **Suite de tests pytest** : authn obligatoire, IDOR→403, login PBKDF2 ok/ko, **rejeu SQLi bloquée**, rejet de champs inattendus | tests verts |
-| **`nmap` du host** → seuls 80/443 ouverts ; db/stitch invisibles | capture |
+| ESXi + VM, déploiement de la stack `VI` durcie | maquette qui tourne (à faire sur la VM) |
+| `pydantic` strict (`extra="forbid"` + `strict=True`) sur thread-api | ✓ fait |
+| Suite de tests pytest : authn obligatoire, IDOR→403, login PBKDF2 ok/ko, rejeu SQLi bloquée, rejet de champs inattendus | ✓ 29 tests |
+| **`nmap` du host** → seuls 80/443 ouverts ; db/stitch invisibles | capture (à rejouer en démo) |
 | Supervision active (Grafana + healthchecks) | dashboard |
 | Dataset synthétique généré via LLM (preprod) | `seed` preprod |
 

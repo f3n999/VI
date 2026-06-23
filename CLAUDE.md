@@ -49,9 +49,14 @@ VI/
 └── secrets/                    # gabarits *.example ; vrais secrets gitignorés
 ```
 
-**Travail en cours / immédiat :** validation stricte **pydantic** sur `thread-api` +
-**suite de tests pytest** (voir §11). Vérifier l'état réel avec `git status` / le contenu de
-`thread-api/app.py` avant de (re)faire.
+**Fait depuis :** validation stricte **pydantic** (`extra="forbid"` + `strict=True`) sur
+`thread-api`, **suite de tests pytest** (29 tests), **scan d'images Trivy** en CI (en plus du
+fs), secrets en `chmod 600`, `backups/` gitignoré. La stack vulnérable d'origine est isolée
+dans `legacy-vulnerable-AVANT/` (référence avant/après, **à ne pas déployer**).
+
+**Restant (sur la VM) :** déploiement live + vérif des inconnus runtime (§10), Grafana
+non-root + user `grafana_ro`, chiffrement au repos. Vérifier l'état réel avec `git status`
+avant de (re)faire.
 
 ---
 
@@ -78,14 +83,14 @@ Issues des réponses du prof — **ne pas les remettre en cause**, les justifier
 
 Le prof a explicitement cité, et a révélé avoir **subi une injection SQL sur l'API** :
 
-- `Trivy` (scan d'images) — **en place** (CI)
+- `Trivy` — **en place** (CI) : scan **fs** (IaC + dépendances) **et scan d'images** (boucle sur les images buildées)
 - `hadolint` (lint Dockerfile) — **en place** (CI)
 - `healthcheck` — **en place** (compose)
 - `yaml strict` (`docker compose config`) — **en place** (CI)
-- **`pydantic`** (validation stricte des entrées) — **à finaliser** sur `thread-api`
-- **tests « dans tous les sens »** (pytest) — **à écrire**
+- **`pydantic`** (validation stricte) — **en place** : `extra="forbid"` + `strict=True` sur `thread-api`
+- **tests « dans tous les sens »** (pytest) — **en place** (29 tests, job CI dédié)
 - **`nmap`** (preuve d'exposition réseau) — à scénariser pour la démo
-- **rejeu de l'injection SQL** → prouver qu'elle est **bloquée** (requêtes préparées)
+- **rejeu de l'injection SQL** → **bloquée** (requêtes préparées), couvert par les tests, à rejouer en démo
 
 > **Angle fort de la soutenance :** « La faille SQL que vous avez subie sur l'API, on l'a
 > identifiée et fermée — et on le prouve en live. »
