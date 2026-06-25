@@ -59,8 +59,8 @@ services:
       DB_HOST: db-velvet
       DB_NAME: velvet
       DB_USER: velvet
-      DB_PASSWORD_FILE: /run/secrets/db_password
-      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      DB_PASSWORD_FILE: /tmp/secrets/db_password
+      JWT_SECRET_FILE: /tmp/secrets/jwt_secret
       PYTHONDONTWRITEBYTECODE: "1"
     secrets:
       - db_password
@@ -73,6 +73,10 @@ services:
       - data
     cap_drop:
       - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
     read_only: true
     tmpfs:
       - /tmp
@@ -94,7 +98,7 @@ services:
       DB_HOST: db-velvet
       DB_NAME: velvet
       DB_USER: velvet
-      DB_PASSWORD_FILE: /run/secrets/db_password
+      DB_PASSWORD_FILE: /tmp/secrets/db_password
     secrets:
       - db_password
     depends_on:
@@ -105,6 +109,10 @@ services:
       - data
     cap_drop:
       - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
     read_only: true
     tmpfs:
       - /tmp
@@ -129,8 +137,8 @@ services:
       DB_HOST: db-velvet
       DB_NAME: velvet
       DB_USER: velvet
-      DB_PASSWORD_FILE: /run/secrets/db_password
-      API_KEY_FILE: /run/secrets/stitch_api_key
+      DB_PASSWORD_FILE: /tmp/secrets/db_password
+      API_KEY_FILE: /tmp/secrets/stitch_api_key
     secrets:
       - db_password
       - stitch_api_key
@@ -141,6 +149,10 @@ services:
       - data
     cap_drop:
       - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
     read_only: true
     tmpfs:
       - /tmp

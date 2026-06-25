@@ -121,12 +121,21 @@ hr
 
 # ── Étape 8 : Résilience SLA ──────────────────────────────────────────────────
 step 8 "Résilience — redémarrage automatique (SLA < 2 min)"
-info "Kill de thread-api..."
-docker kill "$(docker compose ps -q thread-api)" 2>/dev/null || true
+# Pourquoi pas `docker kill` : Docker 29.x marque le stop comme explicite (via l'API daemon)
+#   → restart: unless-stopped ne se déclenche pas (comportement voulu : ne pas boucler sur un stop demandé).
+# Pourquoi pas `docker exec kill 1` : le noyau Linux protège PID 1 d'un PID namespace contre
+#   tout signal envoyé depuis l'intérieur du même namespace (comportement init, signal(7)).
+# Solution retenue : tuer le PID hôte du process principal (hors namespace)
+#   = crash vu par containerd comme sortie anormale → restart: unless-stopped déclenche le redémarrage.
+info "Crash simulé de thread-api (SIGKILL depuis l'hôte, hors PID namespace)..."
+SVC_ID=$(docker compose ps -q thread-api)
+HOST_PID=$(docker inspect "$SVC_ID" --format '{{.State.Pid}}')
+info "PID hôte : $HOST_PID — envoi SIGKILL (hors namespace)"
+kill -SIGKILL "$HOST_PID"
 sleep 3
 docker compose ps thread-api
-info "Attente du redémarrage..."
-sleep 15
+info "Attente du redémarrage + healthcheck..."
+sleep 20
 CODE=$(curl -sk -o /dev/null -w "%{http_code}" "$BASE/health")
 [ "$CODE" = "200" ] && ok "thread-api revenu healthy. SLA respecté." || info "Encore en redémarrage — normal sous 30s."
 hr

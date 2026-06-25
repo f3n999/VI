@@ -12,6 +12,9 @@ RUN sed -i 's/Listen 80$/Listen 8080/' /etc/apache2/ports.conf \
     && chown -R www-data:www-data /var/run/apache2 /var/log/apache2 /var/www/html
 
 COPY --chown=www-data:www-data index.php /var/www/html/index.php
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-USER www-data
 EXPOSE 8080
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["apache2-foreground"]

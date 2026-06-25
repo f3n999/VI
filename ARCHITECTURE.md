@@ -34,7 +34,7 @@ Internet/LAN
 | Mots de passe en clair (C4) | PBKDF2-HMAC-SHA256 600k itérations, comparaison temps constant ; login back-office DB-backed | bcrypt/argon2id = upgrade (dépendance à ajouter) |
 | `debug=True` exposé (C5) | `debug=False` + gunicorn (serveur WSGI prod) | — |
 | Token forgeable / non vérifié (H1) | JWT HS256 signé, `exp` 1 h, vérifié par middleware | Pas de refresh/rotation ni révocation |
-| Conteneurs root (H2) | `USER` non-root partout ; `cap_drop: ALL` (+ caps minimaux) ; `no-new-privileges` | Apache garde un modèle master ; cf. résiduel #5 |
+| Conteneurs root (H2) | `USER` non-root partout ; `cap_drop: ALL` (+ `cap_add` minimaliste CHOWN/SETUID/SETGID pour l'entrypoint) ; `no-new-privileges` ; validé live : `CapEff/CapPrm/CapInh = 0x0` sur le process app (cf. `/proc/1/status`) | — |
 | Secrets en clair compose/env (H3) | Docker secrets fichier ; lecture `*_FILE` | Secret manager (Vault/KMS) = cible prod |
 | Réseau plat (H4) | Segmentation edge/data, `data` internal | NetworkPolicies fines → k3s (dossier archi) |
 | Port DB publié (H5) | DB non publiée, réseau interne, mot de passe fort généré | — |
@@ -63,8 +63,8 @@ Format `pbkdf2_sha256$iter$salt_b64$hash_b64`. **Upgrade prod** : argon2id (RFC 
 1. **ESXi 6.x EOL** (support général terminé) — acceptable pour la maquette, mais le **dossier d'architecture cible doit le présenter comme existant-à-migrer**, pas comme socle « sécurisé ». Cible : hyperviseur supporté (ESXi 8 / Proxmox VE).
 2. **Certificat auto-signé** (maquette) — en prod : PKI interne ou Let's Encrypt (la Zone B utilise déjà LE).
 3. **Tags d'images non épinglés par digest** — `docker compose config --resolve-image-digests` à committer avant prod.
-4. **Jeux de caps `cap_add` dérivés, non validés au runtime de mon côté** (daemon Docker indisponible ici) — à confirmer au premier `up` sur la VM ; ajuster si un service refuse de démarrer.
-5. **`tailor-panel` en `USER www-data`** : recette Apache non-root dérivée, non testée ici ; fallback = modèle master-root + caps `[CHOWN,SETUID,SETGID]`. Upgrade propre : php-fpm + nginx.
+4. ~~**Jeux de caps `cap_add` non validés au runtime**~~ — **VALIDÉ en live (2026-06-25)** : les trois services concernés (thread-api, tailor-panel, stitch-processor) démarrent correctement avec `cap_add: [CHOWN,SETUID,SETGID]`. L'entrypoint root copie les secrets vers `/tmp/secrets/` puis bascule sur l'utilisateur applicatif via `setpriv`/`su-exec`. Preuve : `CapEff = CapPrm = CapInh = 0x0` sur le process final (`/proc/1/status`). La transition `setresuid(0→nonzero)` vide les sets permitted et effective par règle noyau ; les binaires applicatifs (gunicorn, apache, node) n'ont pas de file capabilities → le bounding set résiduel (`0xc1`) n'accorde aucune surface d'exploitation réelle.
+5. ~~**`tailor-panel` en `USER www-data` non testée**~~ — **VALIDÉ en live (2026-06-25)** : tailor-panel (Apache PHP) tourne comme `www-data` via l'entrypoint. Idem thread-api (appuser) et stitch-processor (node). Upgrade prod : php-fpm + nginx.
 6. **`grafana/grafana:11.3.0`** : vérifier que c'est le patch courant (advisory GHSA) avant la prod.
 7. **Secrets via fichiers** (visibles sur le filesystem hôte sous `secrets/`, `chmod 600`, gitignorés) — meilleur que l'env, mais un secret manager reste la cible prod.
 8. **Pas de rate-limiting ni WAF, pas de centralisation de logs/SIEM** — relèvent des briques complémentaires du dossier d'architecture.
