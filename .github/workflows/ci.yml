@@ -62,6 +62,9 @@ jobs:
         with:
           scan-type: fs
           scan-ref: .
+          # legacy-vulnerable-AVANT est vulnérable PAR CONSTRUCTION (état "avant" du cas
+          # d'étude, conservé pour la démo avant/après) — exclu du gate de sécurité.
+          skip-dirs: legacy-vulnerable-AVANT,demande de prof
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "1"

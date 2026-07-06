@@ -51,9 +51,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    pids_limit: 200
     deploy:
       resources:
         limits:
+          cpus: "1.0"
           memory: 512M
 
   thread-api:
@@ -90,9 +92,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    pids_limit: 100
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 256M
 
   tailor-panel:
@@ -129,9 +133,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+    pids_limit: 100
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 256M
 
   stitch-processor:
@@ -166,15 +172,17 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+    pids_limit: 100
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 256M
 
   fabric-watch:
     <<: *svc
     build: ./fabric-watch
-    user: "0"
+    user: "472"
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
@@ -196,9 +204,11 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+    pids_limit: 200
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 256M
 
   reverse-proxy:
@@ -234,9 +244,11 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    pids_limit: 100
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 128M
 
 networks:

@@ -22,7 +22,7 @@ docker compose exec -T db-velvet \
 
 # ── 2. Chiffrement AES-256-CBC (clé dérivée du jwt_secret) ───────────────────
 echo "[2/4] Chiffrement AES-256..."
-PASSPHRASE=$(cat secrets/jwt_secret | head -c 32)
+PASSPHRASE=$(cat secrets/backup_passphrase)   # secret dédié : la rotation du JWT ne casse pas les restaurations
 openssl enc -aes-256-cbc -pbkdf2 -iter 100000 \
     -pass "pass:$PASSPHRASE" \
     -in "/tmp/velvet_${TIMESTAMP}.sql.gz" \

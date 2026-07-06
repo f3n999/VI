@@ -1,5 +1,5 @@
 #!/bin/sh
-# Expose DB_PASSWORD depuis le fichier secret Docker pour le provisioning Grafana
+# Le mot de passe de la datasource est lu par Grafana via $__file{/run/secrets/db_password}
+# (provisioning) — aucun secret exporté en variable d'environnement.
 set -e
-[ -f /run/secrets/db_password ] && export DB_PASSWORD=$(cat /run/secrets/db_password)
 exec /run.sh "$@"
