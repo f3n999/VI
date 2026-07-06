@@ -1,0 +1,54 @@
+Concepts fondamentaux
+ Expliquer la différence entre machine virtuelle et conteneur.
+ Comprendre le rôle de l’hyperviseur : type 1 / type 2.
+ Comprendre le rôle du kernel partagé dans les conteneurs.
+ Identifier les risques liés à la containerisation : évasion, escalade de privilèges, image vulnérable, secrets exposés.
+ Comprendre le principe de surface d’attaque minimale.
+ Savoir lire un Dockerfile et repérer les mauvaises pratiques.
+ Savoir lire un docker-compose.yml sécurisé.
+Sécurité des images
+ Utiliser des images officielles, minimales et maintenues.
+ Éviter les images latest.
+ Scanner les images avec un outil type Trivy, Grype ou équivalent.
+ Supprimer les outils inutiles dans l’image finale : shell, package manager, compilateurs.
+ Utiliser le multi-stage build.
+ Ne jamais stocker de secrets dans une image Docker.
+Sécurité à l’exécution
+ Ne pas lancer un conteneur en root sauf justification forte.
+ Utiliser un utilisateur non privilégié avec USER.
+ Appliquer le principe du moindre privilège.
+ Utiliser cap_drop: ALL puis réactiver uniquement les capabilities nécessaires.
+ Éviter --privileged.
+ Comprendre l’impact d’une capability dangereuse comme SYS_ADMIN.
+ Interdire ou limiter les montages sensibles : /var/run/docker.sock, /proc, /sys, /etc.
+ Mettre le système de fichiers en lecture seule si possible : read_only: true.
+ Gérer les secrets hors image : secrets Docker/Kubernetes, Vault, variables injectées au runtime.
+ Stocker les secrets temporaires en tmpfs lorsque pertinent.
+ Définir des limites de ressources : CPU, mémoire, nombre de processus.
+ Centraliser les logs des conteneurs
+ Surveiller les comportements anormaux (IDS/IPS/WAF..)
+Isolation et durcissement
+ Comprendre les notions de namespaces et cgroups.
+ Utiliser AppArmor, SELinux ou seccomp selon l’environnement.
+ Isoler les réseaux : bridge dédié, segmentation, exposition minimale des ports.
+ Ne publier que les ports strictement nécessaires.
+ Désactiver les communications inutiles entre conteneurs.
+ Journaliser les événements importants.
+ Mettre à jour régulièrement les images, dépendances et hôtes.
+Référentiels et conformité
+ Savoir ce qu’est un CIS Benchmark.
+ Connaître le rôle du NIST dans les bonnes pratiques cybersécurité.
+ Comprendre qu’un benchmark sert à vérifier une configuration sécurisée.
+ Être capable de justifier une mesure de sécurité par un principe : isolation, moindre privilège, défense en profondeur, réduction de surface d’attaque.
+------------------------------------------------
+Synthèse à retenir
+Un conteneur sécurisé doit idéalement être :
+ basé sur une image minimale et scannée ;
+ exécuté sans privilèges élevés ;
+ lancé avec un utilisateur non-root ;
+ limité en capabilities ;
+ isolé réseau et système ;
+ sans secret dans l’image ;
+ avec des ressources limitées ;
+ journalisé et surveillé ;
+ conforme à des référentiels comme CIS Benchmark ou NIST.
