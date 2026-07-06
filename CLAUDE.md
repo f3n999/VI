@@ -129,7 +129,9 @@ Internet/LAN ──443 (TLS 1.2/1.3)──► reverse-proxy (nginx)         rés
 - 🔑 Mots de passe en **PBKDF2-HMAC-SHA256 / 600 000 itérations**, format
   `pbkdf2_sha256$iter$salt_b64$hash_b64`. **Jamais de mot de passe en clair**, ni en base, ni en code.
 - 🧱 **Requêtes préparées partout** (psycopg2 `%s`, PDO `:param`). Jamais de concaténation SQL.
-- 📥 Secrets lus via convention **`<NAME>_FILE`** (Docker secrets montés dans `/run/secrets/`).
+- 📥 Secrets lus via convention **`<NAME>_FILE`**. Deux mécanismes selon le service :
+  - **`fabric-watch`** (user root) : lit directement dans `/run/secrets/` (monté par Docker Compose).
+  - **`thread-api`, `tailor-panel`, `stitch-processor`** : l'entrypoint root copie vers `/tmp/secrets/` (tmpfs privé, `chmod 400 <appuser>:<appuser>`), puis droppe les privilèges. Les `*_FILE` pointent vers `/tmp/secrets/<name>`. **Tout nouveau service non-root doit suivre ce pattern** (l'entrypoint de thread-api fait référence).
 - 🧪 **Aucune donnée réelle.** Données de test/préprod **générées via LLM** ou faker, anonymisées.
 - 📝 Messages de commit clairs ; finir par le trailer `Co-Authored-By` si généré par l'IA.
   Brancher avant de committer si on n'est pas sur une branche de travail. **Ne pas push sans accord.**

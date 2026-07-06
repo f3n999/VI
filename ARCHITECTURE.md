@@ -34,7 +34,7 @@ Internet/LAN
 | Mots de passe en clair (C4) | PBKDF2-HMAC-SHA256 600k itérations, comparaison temps constant ; login back-office DB-backed | bcrypt/argon2id = upgrade (dépendance à ajouter) |
 | `debug=True` exposé (C5) | `debug=False` + gunicorn (serveur WSGI prod) | — |
 | Token forgeable / non vérifié (H1) | JWT HS256 signé, `exp` 1 h, vérifié par middleware | Pas de refresh/rotation ni révocation |
-| Conteneurs root (H2) | `USER` non-root partout ; `cap_drop: ALL` (+ `cap_add` minimaliste CHOWN/SETUID/SETGID pour l'entrypoint) ; `no-new-privileges` ; validé live : `CapEff/CapPrm/CapInh = 0x0` sur le process app (cf. `/proc/1/status`) | — |
+| Conteneurs root (H2) | Entrypoint root → droppe les privilèges via `setpriv`/`su-exec` ; `cap_drop: ALL` + `cap_add` minimaliste (CHOWN/SETUID/SETGID pour la transition) ; `no-new-privileges` ; validé live : `CapEff/CapPrm/CapInh = 0x0` sur PID 1 de chaque service (cf. `/proc/1/status`) | `docker exec` ouvre un shell root par défaut (UID de l'image = root, aucune directive `USER` post-entrypoint) — trade-off accepté et documenté : même comportement que l'image officielle `postgres:16-alpine` (pattern `gosu`). La frontière de sécurité pertinente est le process applicatif (non-root, capabilities = 0x0) ; accéder à `docker exec` exige déjà l'accès au socket Docker (compromission hôte). |
 | Secrets en clair compose/env (H3) | Docker secrets fichier ; lecture `*_FILE` | Secret manager (Vault/KMS) = cible prod |
 | Réseau plat (H4) | Segmentation edge/data, `data` internal | NetworkPolicies fines → k3s (dossier archi) |
 | Port DB publié (H5) | DB non publiée, réseau interne, mot de passe fort généré | — |

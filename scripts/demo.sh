@@ -128,8 +128,10 @@ step 8 "Résilience — redémarrage automatique (SLA < 2 min)"
 # Solution retenue : tuer le PID hôte du process principal (hors namespace)
 #   = crash vu par containerd comme sortie anormale → restart: unless-stopped déclenche le redémarrage.
 info "Crash simulé de thread-api (SIGKILL depuis l'hôte, hors PID namespace)..."
-SVC_ID=$(docker compose ps -q thread-api)
+SVC_ID=$(docker compose ps -q --all thread-api)
+[ -n "$SVC_ID" ] || { fail "thread-api introuvable — stack démarrée ?"; exit 1; }
 HOST_PID=$(docker inspect "$SVC_ID" --format '{{.State.Pid}}')
+[ "$HOST_PID" -gt 0 ] || { fail "thread-api non en cours d'exécution (PID hôte = 0)"; exit 1; }
 info "PID hôte : $HOST_PID — envoi SIGKILL (hors namespace)"
 kill -SIGKILL "$HOST_PID"
 sleep 3
