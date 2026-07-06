@@ -51,12 +51,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    pids_limit: 200
     deploy:
       resources:
         limits:
           cpus: "1.0"
           memory: 512M
+          pids: 200
 
   thread-api:
     <<: *svc
@@ -92,12 +92,12 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
-    pids_limit: 100
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: 256M
+          pids: 100
 
   tailor-panel:
     <<: *svc
@@ -133,12 +133,12 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
-    pids_limit: 100
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: 256M
+          pids: 100
 
   stitch-processor:
     <<: *svc
@@ -172,12 +172,12 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
-    pids_limit: 100
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: 256M
+          pids: 100
 
   fabric-watch:
     <<: *svc
@@ -204,12 +204,12 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    pids_limit: 200
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: 256M
+          pids: 200
 
   reverse-proxy:
     <<: *svc
@@ -244,12 +244,12 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-    pids_limit: 100
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: 128M
+          pids: 100
 
 networks:
   edge:
