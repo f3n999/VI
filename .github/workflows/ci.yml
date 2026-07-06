@@ -28,7 +28,7 @@ jobs:
       - name: compose config
         run: |
           mkdir -p secrets reverse-proxy/tls
-          for s in db_password jwt_secret grafana_admin_password stitch_api_key; do
+          for s in db_password jwt_secret grafana_admin_password stitch_api_key grafana_db_password backup_passphrase; do
             echo dummy > "secrets/$s"
           done
           docker compose config >/dev/null
@@ -52,13 +52,13 @@ jobs:
       - name: secrets factices (pour compose build)
         run: |
           mkdir -p secrets reverse-proxy/tls
-          for s in db_password jwt_secret grafana_admin_password stitch_api_key; do
+          for s in db_password jwt_secret grafana_admin_password stitch_api_key grafana_db_password backup_passphrase; do
             echo dummy > "secrets/$s"
           done
       - name: build images
         run: docker compose build
       - name: trivy fs (IaC + dependances, fail on HIGH/CRITICAL)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -69,7 +69,7 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
       - name: install trivy CLI
-        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.55.0
+        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/v0.72.0/contrib/install.sh | sh -s -- -b /usr/local/bin v0.72.0
       - name: trivy image (scan de chaque image buildee, fail on HIGH/CRITICAL)
         run: |
           # Le prof demande explicitement un scan d'IMAGES (pas seulement fs).
