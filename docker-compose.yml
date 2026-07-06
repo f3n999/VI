@@ -7,6 +7,8 @@ secrets:
     file: ./secrets/grafana_admin_password
   stitch_api_key:
     file: ./secrets/stitch_api_key
+  grafana_db_password:
+    file: ./secrets/grafana_db_password
 
 x-svc: &svc
   restart: unless-stopped
@@ -29,9 +31,11 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     secrets:
       - db_password
+      - grafana_db_password
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./db-velvet/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./db-velvet/zz-grafana-ro.sh:/docker-entrypoint-initdb.d/zz-grafana-ro.sh:ro
     networks:
       - data
     cap_drop:
@@ -176,10 +180,9 @@ services:
       GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin_password
       GF_SERVER_ROOT_URL: https://grafana.sl1p.local/
       GF_USERS_ALLOW_SIGN_UP: "false"
-      DB_PASSWORD_FILE: /run/secrets/db_password
     secrets:
       - grafana_admin_password
-      - db_password
+      - grafana_db_password
     volumes:
       - grafana-data:/var/lib/grafana
     networks:

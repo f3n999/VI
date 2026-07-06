@@ -5,9 +5,9 @@ datasources:
     type: postgres
     uid: velvet-pg
     url: db-velvet:5432
-    user: velvet
+    user: grafana_ro
     secureJsonData:
-      password: ${DB_PASSWORD}
+      password: $__file{/run/secrets/grafana_db_password}
     jsonData:
       database: velvet
       sslmode: disable
