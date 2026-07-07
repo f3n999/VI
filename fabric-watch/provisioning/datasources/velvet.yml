@@ -7,7 +7,7 @@ datasources:
     url: db-velvet:5432
     user: grafana_ro
     secureJsonData:
-      password: $__file{/run/secrets/grafana_db_password}
+      password: ${GRAFANA_DB_PASSWORD}
     jsonData:
       database: velvet
       sslmode: disable
