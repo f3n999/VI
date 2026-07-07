@@ -11,7 +11,8 @@ gen() { openssl rand -base64 "$1" | tr -d '\n'; }
 [ -f secrets/grafana_admin_password ] || gen 24 > secrets/grafana_admin_password
 [ -f secrets/stitch_api_key ]         || gen 32 > secrets/stitch_api_key
 [ -f secrets/grafana_db_password ]    || gen 24 > secrets/grafana_db_password
-chmod 600 secrets/db_password secrets/jwt_secret secrets/grafana_admin_password secrets/stitch_api_key secrets/grafana_db_password
+[ -f secrets/backup_passphrase ]      || gen 32 > secrets/backup_passphrase
+chmod 600 secrets/db_password secrets/jwt_secret secrets/grafana_admin_password secrets/stitch_api_key secrets/grafana_db_password secrets/backup_passphrase
 
 if [ ! -f reverse-proxy/tls/server.crt ]; then
   MSYS_NO_PATHCONV=1 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \

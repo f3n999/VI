@@ -1,5 +1,8 @@
 FROM node:22-alpine
 
+# hadolint ignore=DL3018
+# su-exec : version non epinglee volontairement (le pin apk casse a chaque rotation
+# des depots Alpine) ; l'image de base node:22-alpine est elle-meme epinglee.
 RUN apk add --no-cache su-exec
 
 WORKDIR /app

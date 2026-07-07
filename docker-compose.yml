@@ -54,7 +54,9 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "1.0"
           memory: 512M
+          pids: 200
 
   thread-api:
     <<: *svc
@@ -93,7 +95,9 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 256M
+          pids: 100
 
   tailor-panel:
     <<: *svc
@@ -132,7 +136,9 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 256M
+          pids: 100
 
   stitch-processor:
     <<: *svc
@@ -169,7 +175,9 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 256M
+          pids: 100
 
   fabric-watch:
     <<: *svc
@@ -199,7 +207,9 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 256M
+          pids: 200
 
   reverse-proxy:
     <<: *svc
@@ -237,7 +247,9 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "0.5"
           memory: 128M
+          pids: 100
 
 networks:
   edge:

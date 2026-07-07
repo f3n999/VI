@@ -16,7 +16,7 @@ if [ -z "$ARCHIVE" ] || [ ! -f "$ARCHIVE" ]; then
     echo "Utilisation du backup le plus récent : $ARCHIVE"
 fi
 
-PASSPHRASE=$(cat secrets/jwt_secret | head -c 32)
+PASSPHRASE=$(cat secrets/backup_passphrase)   # secret dédié : la rotation du JWT ne casse pas les restaurations
 TMPFILE="/tmp/restore_drill_$(date +%s).sql.gz"
 
 echo ""

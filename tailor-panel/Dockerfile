@@ -1,5 +1,8 @@
 FROM php:8.3-apache
 
+# hadolint ignore=DL3008
+# libpq-dev : version non epinglee volontairement (les pins Debian disparaissent
+# des miroirs a chaque point-release) ; l'image php:8.3-apache est epinglee.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql \
